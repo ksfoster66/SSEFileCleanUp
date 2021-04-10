@@ -71,16 +71,7 @@ namespace SSE_File_CleanUp {
             });
 
 
-            
-            ////Mesh folder 
-            //meshPath = @"F:\Test Data\KS Hairdos SSE-6817-1-7-1593347494\meshes";
-            ////Texture folder 
-            //textPath = @"F:\Test Data\KS Hairdos SSE-6817-1-7-1593347494\textures";
-            
-            //excludePath = "Excluded";
-            ////Exclude List
-            //ExcludeListPath = @"F:\Test Data\excludeList.txt";
-
+            //Validate inputs
             bool cont = false;
             if (!string.IsNullOrEmpty(meshPath) && Directory.Exists(meshPath) &&
                 !string.IsNullOrEmpty(textPath) && Directory.Exists(textPath) &&
@@ -90,10 +81,12 @@ namespace SSE_File_CleanUp {
 
 
                 if (Directory.Exists(excludePath) && !IsDirEmpty(excludePath)) {
-                    Console.WriteLine("Exclude directory already exists. " +
-                        "Please check the directory and either move to back up location, delete the directory, or supply a new Directory name");
+                    Console.WriteLine("Exclude directory already exists and is not empty. " +
+                        "Please check the directory and either move it to a back up location, delete the directory, or supply a new Directory name");
+                    Console.WriteLine("If you would like to continue anyway, please enter (y)es, but note, this will cause a lot of entires in the error file: ");
 
-                    //Add a prompt to continue anyway
+                    string input = Console.ReadLine();
+                    if (input.ToLower() == "y" || input.ToLower() == "yes") cont = true;
                 }
                 else {
                     cont = true;
@@ -118,6 +111,7 @@ namespace SSE_File_CleanUp {
                 }
             }
 
+            //Ensure full paths, and start processing
             if (cont) {
                 if (!Path.IsPathFullyQualified(meshPath)) meshPath = Path.GetFullPath(meshPath);
                 if (!Path.IsPathFullyQualified(textPath)) textPath = Path.GetFullPath(textPath);
@@ -126,15 +120,16 @@ namespace SSE_File_CleanUp {
                 if (Path.EndsInDirectorySeparator(textPath)) textPath = Path.TrimEndingDirectorySeparator(textPath);
                 if (Path.EndsInDirectorySeparator(excludePath)) excludePath = Path.TrimEndingDirectorySeparator(excludePath);
 
+                //Build exclusion list
                 BuildExcludeList(ExcludeListPath);
+                //Process all relevant files in the mesh directory
                 ProcessDirectory(meshPath);
+                //Save the keep and exclude lists
                 SaveLists();
 
+                //Move files based on generated keep and exclude lists
                 MoveFiles();
             }
-
-            //string filePath = @"F:\Test Data\KS Hairdos SSE-6817-1-7-1593347494\meshes\KS Hairdo's\Siamese.nif";
-            //ProcessTextures(filePath, false);
 
             Console.WriteLine("Finishing run");
             DateTime finish = DateTime.Now;
@@ -203,6 +198,7 @@ namespace SSE_File_CleanUp {
 
         }
 
+        //Process the supplied exclusion list.
         static void BuildExcludeList(string excludeListPath) {
             Console.WriteLine("Building Exclusion list from provided text document");
             StreamReader reader = new StreamReader(excludeListPath);
@@ -211,24 +207,28 @@ namespace SSE_File_CleanUp {
 
             while ((line = reader.ReadLine()) != null) {
                 if (!String.IsNullOrEmpty(line)) {
+                    //TODO: Add in a check for fully qualified file names and only add the meshpath if not
                     Console.WriteLine(line);
+                    //If file is a txt, simply check each line that it is a valid file name, and add to to exclusion list.
                     if (Path.GetExtension(excludeListPath) == ".txt") {
                         foreach (string extension in meshExtensions) {
                             if ((Path.GetExtension(line) == @"." + extension) &&
-                                !excludeList.Contains(line)) {
-                                excludeList.Add(meshPath + @"\" + line);
-                                excludedFiles.Add(meshPath + @"\" + line);
+                                !excludeList.Contains((meshPath + @"\" + line).ToLower())) {
+                                excludeList.Add((meshPath + @"\" + line).ToLower());
+                                excludedFiles.Add((meshPath + @"\" + line).ToLower());
                             }
                         }
                     }
+
+                    //If file is a csv, split the line and check each part if it's a file name, and add to to exclusion list.
                     else if (Path.GetExtension(excludeListPath) == ".csv") {
                         string[] temp = line.Split(',');
                         foreach (string str in temp) {
                             foreach (string extension in meshExtensions) {
                                 if ((Path.GetExtension(str) == @"." + extension) &&
-                                !excludeList.Contains(str)) {
-                                    excludeList.Add(meshPath + @"\" + str);
-                                    excludedFiles.Add(meshPath + @"\" + str);
+                                !excludeList.Contains((meshPath + @"\" + str).ToLower())) {
+                                    excludeList.Add((meshPath + @"\" + str).ToLower());
+                                    excludedFiles.Add((meshPath + @"\" + str).ToLower());
                                 }
                             }
                         }
@@ -239,6 +239,7 @@ namespace SSE_File_CleanUp {
             Console.WriteLine("Finished building Exclusion list");
         }
 
+        //Recursively go through each subdirectory and process every file found.
         static void ProcessDirectory(string DirectoryPath) {
             string[] files = Directory.GetFiles(DirectoryPath);
 
@@ -256,6 +257,7 @@ namespace SSE_File_CleanUp {
             }
         }
 
+        //Check if file is on the exclusion list, if not, add to kept list, then check file for textures
         static void ProcessFile(string filePath) {
             bool exclude = false;
             
@@ -266,15 +268,14 @@ namespace SSE_File_CleanUp {
             else {
                 keptFiles.Add(filePath);
                 Console.WriteLine("File is kept");
+
             }
 
             ProcessTextures(filePath, exclude);
         }
 
+        //Move files to exclude directory, and delete original
         static void MoveFiles() {
-            if (Directory.Exists(excludePath))
-                Directory.Delete(excludePath);
-
             Directory.CreateDirectory(excludePath);
 
             StreamWriter errorLog = new StreamWriter(excludePath + @"\error.txt");
