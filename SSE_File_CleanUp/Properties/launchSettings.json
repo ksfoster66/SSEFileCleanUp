@@ -2,7 +2,7 @@
   "profiles": {
     "SSE_File_CleanUp": {
       "commandName": "Project",
-      "commandLineArgs": "-m \"F:\\Test Data\\KS Hairdos SSE-6817-1-7-1593347494\\meshes\" -t \"F:\\Test Data\\KS Hairdos SSE-6817-1-7-1593347494\\textures\" -l \"F:\\Test Data\\Exported.csv\""
+      "commandLineArgs": "-m \"F:\\Test Data\\KS Hairdos SSE-6817-1-7-1593347494\\meshes\" -t \"F:\\Test Data\\KS Hairdos SSE-6817-1-7-1593347494\\textures\" -l \"F:\\Test Data\\excludeList.txt\""
     }
   }
 }
