@@ -261,17 +261,17 @@ namespace SSE_File_CleanUp {
         static void ProcessFile(string filePath) {
             bool exclude = false;
             
-            if (excludeList.Contains(filePath)) {
+            if (excludeList.Contains(filePath.ToLower())) {
                 Console.WriteLine("File is excluded");
                 exclude = true;
             }
             else {
-                keptFiles.Add(filePath);
+                keptFiles.Add(filePath.ToLower());
                 Console.WriteLine("File is kept");
 
             }
 
-            ProcessTextures(filePath, exclude);
+            ProcessTextures(filePath.ToLower(), exclude);
         }
 
         //Move files to exclude directory, and delete original
@@ -286,10 +286,10 @@ namespace SSE_File_CleanUp {
 
                         string target = "";
                         if (file.ToLower().Contains("meshes")) {
-                            target = excludePath + @"\meshes\" + file.Replace(meshPath + @"\", "");
+                            target = excludePath + @"\meshes\" + file.ToLower().Replace(meshPath.ToLower() + @"\", "");
                         }
                         else if (file.ToLower().Contains("textures")) {
-                            target = excludePath + @"\textures\" + file.Replace(textPath + @"\", "");
+                            target = excludePath + @"\textures\" + file.ToLower().Replace(textPath.ToLower() + @"\", "");
                         }
 
                         Console.WriteLine("Copying " + file + " to " + target);
