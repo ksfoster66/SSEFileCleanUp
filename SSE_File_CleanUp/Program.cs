@@ -215,9 +215,9 @@ namespace SSE_File_CleanUp {
                     if (Path.GetExtension(excludeListPath) == ".txt") {
                         foreach (string extension in meshExtensions) {
                             if ((Path.GetExtension(line) == @"." + extension) &&
-                                !excludeList.Contains((meshPath + @"\" + line).ToLower())) {
-                                excludeList.Add((meshPath + @"\" + line).ToLower());
-                                excludedFiles.Add((meshPath + @"\" + line).ToLower());
+                                !excludeList.Contains(line)) {
+                                excludeList.Add(meshPath + @"\" + line);
+                                excludedFiles.Add(meshPath + @"\" + line);
                             }
                         }
                     }
@@ -226,9 +226,9 @@ namespace SSE_File_CleanUp {
                         foreach (string str in temp) {
                             foreach (string extension in meshExtensions) {
                                 if ((Path.GetExtension(str) == @"." + extension) &&
-                                !excludeList.Contains((meshPath + @"\" + str).ToLower())) {
-                                    excludeList.Add((meshPath + @"\" + str).ToLower());
-                                    excludedFiles.Add((meshPath + @"\" + str).ToLower());
+                                !excludeList.Contains(str)) {
+                                    excludeList.Add(meshPath + @"\" + str);
+                                    excludedFiles.Add(meshPath + @"\" + str);
                                 }
                             }
                         }
